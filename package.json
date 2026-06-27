@@ -1,0 +1,19 @@
+{
+  "name": "parkclear",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "web"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:web": "npm run dev --workspace=web",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:web\"",
+    "build": "npm run build --workspace=web && npm run build --workspace=backend",
+    "lint": "npm run lint --workspace=web && npm run lint --workspace=backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "node-fetch": "^3.3.2"
+  }
+}
