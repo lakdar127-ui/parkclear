@@ -10,6 +10,7 @@ import {
   CreditCard,
   LogOut,
   Bell,
+  ChevronRight,
 } from 'lucide-react'
 
 const navItems = [
@@ -20,10 +21,10 @@ const navItems = [
 ]
 
 const PLAN_BADGE: Record<string, { label: string; color: string }> = {
-  trial:    { label: 'Essai',    color: 'bg-gray-100 text-gray-600' },
-  starter:  { label: 'Starter', color: 'bg-blue-100 text-blue-700' },
-  pro:      { label: 'Pro',      color: 'bg-primary-100 text-primary-700' },
-  business: { label: 'Business',color: 'bg-violet-100 text-violet-700' },
+  trial:    { label: 'Essai',    color: 'bg-slate-700 text-slate-300' },
+  starter:  { label: 'Starter', color: 'bg-blue-900 text-blue-300' },
+  pro:      { label: 'Pro',      color: 'bg-primary-900 text-primary-300' },
+  business: { label: 'Business',color: 'bg-violet-900 text-violet-300' },
 }
 
 export default function AppLayout() {
@@ -40,43 +41,43 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-60 bg-white border-r border-gray-200 flex flex-col">
+    <div className="flex h-screen bg-slate-50">
+      {/* Sidebar dark */}
+      <aside className="w-64 bg-slate-900 flex flex-col shrink-0">
         {/* Logo */}
-        <div className="h-16 flex items-center gap-2 px-4 border-b border-gray-200">
-          <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-            <span className="text-white text-sm">🅿</span>
+        <div className="h-16 flex items-center gap-3 px-5 border-b border-slate-800">
+          <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-md">
+            <span className="text-white font-black text-sm">P</span>
           </div>
-          <span className="font-bold text-gray-900">ParkClear</span>
+          <span className="font-bold text-white text-base tracking-tight">ParkClear</span>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) => `
-                flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
                 ${isActive
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}
+                  ? 'bg-primary-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'}
               `}
             >
-              <Icon size={18} />
+              <Icon size={17} />
               {label}
             </NavLink>
           ))}
         </nav>
 
-        {/* Subscription link */}
+        {/* Subscription */}
         <div className="px-3 pb-2">
           <Link
             to="/settings/subscription"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group"
           >
-            <CreditCard size={16} />
+            <CreditCard size={17} />
             <span className="flex-1">Abonnement</span>
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${planBadge.color}`}>
               {planBadge.label}
@@ -85,23 +86,23 @@ export default function AppLayout() {
         </div>
 
         {/* User */}
-        <div className="p-3 border-t border-gray-200">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 group">
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-600">
+        <div className="p-3 border-t border-slate-800">
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 group transition-colors cursor-default">
+            <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0">
               {profile?.full_name?.[0]?.toUpperCase() ?? '?'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-white truncate">
                 {profile?.full_name ?? 'Utilisateur'}
               </p>
-              <p className="text-xs text-gray-400 capitalize">{profile?.role}</p>
+              <p className="text-xs text-slate-500 capitalize">{profile?.role}</p>
             </div>
             <button
               onClick={handleSignOut}
-              className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-200 transition-opacity"
+              className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-700 transition-all"
               title="Se déconnecter"
             >
-              <LogOut size={14} className="text-gray-500" />
+              <LogOut size={14} className="text-slate-400" />
             </button>
           </div>
         </div>
@@ -110,15 +111,28 @@ export default function AppLayout() {
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Topbar */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-end px-6 gap-3">
-          <button className="relative p-2 rounded-lg hover:bg-gray-100">
-            <Bell size={20} className="text-gray-500" />
-          </button>
+        <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+          <div className="flex items-center gap-1.5 text-sm text-gray-400">
+            <span className="font-medium text-gray-700">{org?.name ?? 'Mon organisation'}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <Bell size={18} className="text-gray-500" />
+            </button>
+            <Link
+              to="/settings/subscription"
+              className={`text-xs px-2.5 py-1 rounded-full font-medium ${planBadge.color} bg-opacity-10`}
+            >
+              {planBadge.label}
+            </Link>
+          </div>
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-auto p-6">
-          <Outlet />
+        <main className="flex-1 overflow-auto bg-slate-50">
+          <div className="p-6">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
