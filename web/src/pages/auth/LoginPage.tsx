@@ -60,7 +60,7 @@ export default function LoginPage({ isSignup = false }: { isSignup?: boolean }) 
     try {
       if (isSignup) {
         const v = values as SignupForm
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: v.email,
           password: v.password,
           options: {
@@ -69,7 +69,11 @@ export default function LoginPage({ isSignup = false }: { isSignup?: boolean }) 
           },
         })
         if (error) throw error
-        setSuccessMsg('Compte créé ! Connectez-vous dès maintenant ou vérifiez votre email.')
+        if (data.session) {
+          navigate('/onboarding')
+          return
+        }
+        setSuccessMsg('Compte créé ! Vérifiez votre email pour confirmer.')
       } else {
         const v = values as LoginForm
         const { error } = await supabase.auth.signInWithPassword({
