@@ -10,7 +10,6 @@ import {
   CreditCard,
   LogOut,
   Bell,
-  ChevronRight,
 } from 'lucide-react'
 
 const navItems = [
