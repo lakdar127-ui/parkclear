@@ -164,7 +164,7 @@ export default function DossierDetailPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="animate-spin h-8 w-8 border-2 border-primary-600 border-t-transparent rounded-full" />
+        <div className="animate-spin h-8 w-8 border-2 border-t-transparent rounded-full" style={{ borderColor: 'var(--electric-blue)', borderTopColor: 'transparent' }} />
       </div>
     )
   }
@@ -172,8 +172,8 @@ export default function DossierDetailPage() {
   if (!dossier) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-500">Dossier introuvable.</p>
-        <Link to="/dossiers" className="text-primary-600 text-sm mt-2 inline-block hover:underline">
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Dossier introuvable.</p>
+        <Link to="/dossiers" className="text-sm mt-2 inline-block hover:underline" style={{ color: 'var(--electric-blue)' }}>
           ← Retour aux dossiers
         </Link>
       </div>
@@ -190,18 +190,21 @@ export default function DossierDetailPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Back + header */}
       <div>
-        <Link to="/dossiers" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-3">
+        <Link to="/dossiers" className="flex items-center gap-1.5 text-sm mb-3 transition-colors"
+          style={{ color: 'var(--text-secondary)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}>
           <ArrowLeft size={15} /> Dossiers
         </Link>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
                 {dossier.plate ?? 'Sans plaque'}
               </h1>
               <StatusBadge status={dossier.status} />
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Dossier #{id?.slice(0, 8).toUpperCase()} · Créé il y a {daysOpen === 0 ? 'aujourd\'hui' : `${daysOpen} jours`}
             </p>
           </div>
@@ -215,7 +218,7 @@ export default function DossierDetailPage() {
                 disabled={updateMutation.isPending}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
                   action.variant === 'primary' ? 'btn-primary' :
-                  action.variant === 'danger' ? 'bg-red-600 text-white hover:bg-red-700' :
+                  action.variant === 'danger' ? 'btn-danger' :
                   'btn-secondary'
                 }`}
               >
@@ -258,7 +261,7 @@ export default function DossierDetailPage() {
         <div className="lg:col-span-2 space-y-5">
           {/* Vehicle info */}
           <div className="card p-5">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Véhicule</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Véhicule</h2>
             <div className="grid grid-cols-2 gap-3">
               <InfoItem label="Plaque" value={dossier.no_plate ? 'Illisible / absente' : (dossier.plate ?? '—')} />
               <InfoItem label="Type" value={
@@ -272,7 +275,7 @@ export default function DossierDetailPage() {
 
           {/* Location */}
           <div className="card p-5">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide mb-3 flex items-center gap-2" style={{ color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
               <MapPin size={14} /> Localisation
             </h2>
             <div className="grid grid-cols-2 gap-3">
@@ -285,12 +288,12 @@ export default function DossierDetailPage() {
           {/* Photos */}
           {dossier.photos && dossier.photos.length > 0 && (
             <div className="card p-5">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+              <h2 className="text-sm font-semibold uppercase tracking-wide mb-3 flex items-center gap-2" style={{ color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
                 <ImageIcon size={14} /> Photos ({dossier.photos.length})
               </h2>
               <div className="grid grid-cols-3 gap-3">
                 {dossier.photos.map((photo) => (
-                  <div key={photo.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 relative group">
+                  <div key={photo.id} className="aspect-square rounded-lg overflow-hidden relative group" style={{ background: 'rgba(255,255,255,0.06)' }}>
                     {photoUrls[photo.id] ? (
                       <a href={photoUrls[photo.id]} target="_blank" rel="noopener noreferrer">
                         <img
@@ -301,7 +304,7 @@ export default function DossierDetailPage() {
                       </a>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <div className="animate-spin h-5 w-5 border-2 border-primary-600 border-t-transparent rounded-full" />
+                        <div className="animate-spin h-5 w-5 border-2 border-t-transparent rounded-full" style={{ borderColor: 'var(--electric-blue)', borderTopColor: 'transparent' }} />
                       </div>
                     )}
                     <span className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
@@ -316,15 +319,15 @@ export default function DossierDetailPage() {
           {/* Notes */}
           {dossier.notes && (
             <div className="card p-5">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Notes</h2>
-              <p className="text-sm text-gray-700 leading-relaxed">{dossier.notes}</p>
+              <h2 className="text-sm font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Notes</h2>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>{dossier.notes}</p>
             </div>
           )}
 
           {/* Procedure dates */}
           {(dossier.lrar_sent_at || dossier.deadline_at) && (
             <div className="card p-5">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Procédure</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Procédure</h2>
               <div className="grid grid-cols-2 gap-3">
                 {dossier.lrar_sent_at && (
                   <InfoItem
@@ -348,7 +351,7 @@ export default function DossierDetailPage() {
         <div className="space-y-5">
           {/* Timeline */}
           <div className="card p-5">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Procédure légale</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wide mb-4" style={{ color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Procédure légale</h2>
             <div className="space-y-0">
               {TIMELINE.map((step, i) => {
                 const done = i < currentStep
@@ -358,28 +361,26 @@ export default function DossierDetailPage() {
                 return (
                   <div key={step.status} className="flex gap-3">
                     <div className="flex flex-col items-center">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        done   ? 'border-primary-600 bg-primary-600' :
-                        active ? 'border-primary-600 bg-white' :
-                                 'border-gray-200 bg-white'
-                      }`}>
-                        {done && <CheckCircle size={12} className="text-white" />}
-                        {active && <div className="w-2 h-2 rounded-full bg-primary-600" />}
+                      <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0"
+                        style={{
+                          borderColor: done || active ? '#2D7EF8' : 'rgba(255,255,255,0.12)',
+                          background: done ? '#2D7EF8' : active ? 'rgba(45,126,248,0.15)' : 'transparent',
+                        }}>
+                        {done && <CheckCircle size={12} color="white" />}
+                        {active && <div className="w-2 h-2 rounded-full" style={{ background: '#2D7EF8' }} />}
                       </div>
                       {!isLast && (
-                        <div className={`w-0.5 flex-1 min-h-5 ${done ? 'bg-primary-200' : 'bg-gray-100'}`} />
+                        <div className="w-0.5 flex-1 min-h-5"
+                          style={{ background: done ? 'rgba(45,126,248,0.35)' : 'rgba(255,255,255,0.06)' }} />
                       )}
                     </div>
-                    <div className={`pb-4 ${isLast ? '' : ''}`}>
-                      <p className={`text-sm font-medium leading-tight ${
-                        active ? 'text-primary-700' :
-                        done   ? 'text-gray-700' :
-                                 'text-gray-300'
-                      }`}>
+                    <div className="pb-4">
+                      <p className="text-sm font-medium leading-tight"
+                        style={{ color: active ? '#6BA8FF' : done ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                         {step.label}
                       </p>
                       {(active || done) && (
-                        <p className="text-xs text-gray-400 mt-0.5">{step.desc}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{step.desc}</p>
                       )}
                     </div>
                   </div>
@@ -390,29 +391,29 @@ export default function DossierDetailPage() {
 
           {/* Meta */}
           <div className="card p-5">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide mb-3 flex items-center gap-2" style={{ color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
               <User size={14} /> Informations
             </h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Agent</span>
-                <span className="text-gray-900">{dossier.profiles?.full_name ?? '—'}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>Agent</span>
+                <span style={{ color: 'var(--text-primary)' }}>{dossier.profiles?.full_name ?? '—'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Créé le</span>
-                <span className="text-gray-900">
+                <span style={{ color: 'var(--text-secondary)' }}>Créé le</span>
+                <span style={{ color: 'var(--text-primary)' }}>
                   {format(new Date(dossier.created_at), 'dd MMM yyyy', { locale: fr })}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Mis à jour</span>
-                <span className="text-gray-900">
+                <span style={{ color: 'var(--text-secondary)' }}>Mis à jour</span>
+                <span style={{ color: 'var(--text-primary)' }}>
                   {formatDistanceToNow(new Date(dossier.updated_at), { addSuffix: true, locale: fr })}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">ID</span>
-                <span className="text-gray-400 font-mono text-xs">{id?.slice(0, 8).toUpperCase()}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>ID</span>
+                <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>{id?.slice(0, 8).toUpperCase()}</span>
               </div>
             </div>
           </div>
@@ -421,23 +422,23 @@ export default function DossierDetailPage() {
 
       {/* LRAR Modal */}
       {showLrarModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Envoyer la LRAR</h3>
-            <p className="text-sm text-gray-500 mb-4">
+        <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+          <div className="card p-6 max-w-md w-full mx-4" style={{ background: 'var(--bg-surface)' }}>
+            <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Envoyer la LRAR</h3>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
               Indiquez la date d'envoi de la lettre recommandée. Le délai de 10 jours sera calculé automatiquement.
             </p>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date d'envoi LRAR</label>
+              <label className="label">Date d'envoi LRAR</label>
               <input
                 type="date"
                 value={lrarDate}
                 onChange={(e) => setLrarDate(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="input"
               />
               {lrarDate && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
                   Délai expire le : <strong>
                     {format(
                       new Date(new Date(lrarDate).setDate(new Date(lrarDate).getDate() + 10)),
@@ -472,8 +473,8 @@ export default function DossierDetailPage() {
 function InfoItem({ label, value, alert }: { label: string; value: string; alert?: boolean }) {
   return (
     <div>
-      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className={`text-sm font-medium ${alert ? 'text-red-600' : 'text-gray-900'}`}>{value}</p>
+      <p className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="text-sm font-medium" style={{ color: alert ? 'var(--danger)' : 'var(--text-primary)' }}>{value}</p>
     </div>
   )
 }

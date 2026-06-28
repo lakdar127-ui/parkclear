@@ -26,9 +26,9 @@ const PLANS: PlanConfig[] = [
     name: 'Starter',
     price: 29,
     icon: Zap,
-    color: 'text-blue-600',
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
+    color: '#2D7EF8',
+    bg: 'rgba(45,126,248,0.12)',
+    border: 'rgba(45,126,248,0.25)',
     limits: '5 dossiers actifs · 1 parking · 2 agents',
     features: [
       'Signalement mobile illimité',
@@ -43,9 +43,9 @@ const PLANS: PlanConfig[] = [
     name: 'Pro',
     price: 59,
     icon: Rocket,
-    color: 'text-primary-600',
-    bg: 'bg-primary-50',
-    border: 'border-primary-300',
+    color: '#7B61FF',
+    bg: 'rgba(123,97,255,0.12)',
+    border: 'rgba(123,97,255,0.30)',
     limits: '20 dossiers actifs · 5 parkings · 10 agents',
     highlight: true,
     features: [
@@ -62,9 +62,9 @@ const PLANS: PlanConfig[] = [
     name: 'Business',
     price: 99,
     icon: Building2,
-    color: 'text-violet-600',
-    bg: 'bg-violet-50',
-    border: 'border-violet-200',
+    color: '#00C896',
+    bg: 'rgba(0,200,150,0.12)',
+    border: 'rgba(0,200,150,0.25)',
     limits: 'Dossiers illimités · Sites illimités · Agents illimités',
     features: [
       'Tout Pro, plus :',
@@ -141,9 +141,9 @@ export default function SubscriptionPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Abonnement</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Plan actuel : <span className="font-medium text-gray-900">{PLAN_LABELS[currentPlan]}</span>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Abonnement</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+          Plan actuel : <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{PLAN_LABELS[currentPlan]}</span>
           {org?.plan_expires_at && (
             <> · Expire le {new Date(org.plan_expires_at).toLocaleDateString('fr-FR')}</>
           )}
@@ -152,16 +152,17 @@ export default function SubscriptionPage() {
 
       {/* Alerts */}
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-          <CheckCircle size={20} className="text-green-600 shrink-0" />
-          <p className="text-sm text-green-800 font-medium">
+        <div className="flex items-center gap-3 rounded-xl p-4"
+          style={{ background: 'rgba(0,200,150,0.08)', border: '1px solid rgba(0,200,150,0.25)' }}>
+          <CheckCircle size={20} style={{ color: 'var(--success)' }} className="shrink-0" />
+          <p className="text-sm font-medium" style={{ color: '#00C896' }}>
             Abonnement activé ! Votre plan a été mis à jour.
           </p>
         </div>
       )}
       {cancelled && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <p className="text-sm text-amber-800">Paiement annulé. Vous pouvez réessayer à tout moment.</p>
+        <div className="rounded-xl p-4" style={{ background: 'rgba(255,181,71,0.08)', border: '1px solid rgba(255,181,71,0.25)' }}>
+          <p className="text-sm" style={{ color: '#FFB547' }}>Paiement annulé. Vous pouvez réessayer à tout moment.</p>
         </div>
       )}
 
@@ -175,54 +176,52 @@ export default function SubscriptionPage() {
           return (
             <div
               key={plan.id}
-              className={`card p-6 flex flex-col relative ${
-                plan.highlight ? 'ring-2 ring-primary-500 shadow-lg' : ''
-              }`}
+              className="card p-6 flex flex-col relative"
+              style={plan.highlight ? { border: `1px solid ${plan.border}`, boxShadow: `0 0 32px rgba(123,97,255,0.15)` } : {}}
             >
               {plan.highlight && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-primary-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="text-white text-xs font-bold px-3 py-1 rounded-full"
+                    style={{ background: 'linear-gradient(135deg, #7B61FF, #2D7EF8)' }}>
                     Recommandé
                   </span>
                 </div>
               )}
 
               {/* Header */}
-              <div className={`w-10 h-10 rounded-xl ${plan.bg} flex items-center justify-center mb-4`}>
-                <plan.icon size={20} className={plan.color} />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                style={{ background: plan.bg }}>
+                <plan.icon size={20} style={{ color: plan.color }} />
               </div>
 
-              <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+              <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{plan.name}</h3>
               <div className="flex items-baseline gap-1 mt-1 mb-2">
-                <span className="text-3xl font-bold text-gray-900">{plan.price}€</span>
-                <span className="text-gray-500 text-sm">/mois</span>
+                <span className="text-3xl font-bold kpi-number" style={{ color: 'var(--text-primary)' }}>{plan.price}€</span>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>/mois</span>
               </div>
-              <p className="text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100">{plan.limits}</p>
+              <p className="text-xs mb-4 pb-4" style={{ color: 'var(--text-secondary)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>{plan.limits}</p>
 
               {/* Features */}
               <ul className="space-y-2 flex-1 mb-6">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm">
-                    <CheckCircle size={14} className="text-primary-600 mt-0.5 shrink-0" />
-                    <span className={f.startsWith('Tout') ? 'text-gray-500 italic' : 'text-gray-700'}>{f}</span>
+                    <CheckCircle size={14} className="mt-0.5 shrink-0" style={{ color: plan.color }} />
+                    <span style={{ color: f.startsWith('Tout') ? 'var(--text-muted)' : 'var(--text-secondary)', fontStyle: f.startsWith('Tout') ? 'italic' : 'normal' }}>{f}</span>
                   </li>
                 ))}
               </ul>
 
               {/* CTA */}
               {isCurrent ? (
-                <div className={`w-full py-2.5 rounded-lg text-center text-sm font-medium ${plan.bg} ${plan.color} border ${plan.border}`}>
+                <div className="w-full py-2.5 rounded-lg text-center text-sm font-semibold"
+                  style={{ background: plan.bg, color: plan.color, border: `1px solid ${plan.border}` }}>
                   Plan actuel
                 </div>
               ) : (
                 <button
                   onClick={() => handleUpgrade(plan.id)}
                   disabled={!!loading}
-                  className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 ${
-                    plan.highlight
-                      ? 'bg-primary-600 text-white hover:bg-primary-700'
-                      : 'btn-secondary'
-                  }`}
+                  className={plan.highlight ? 'btn-primary w-full' : 'btn-secondary w-full'}
                 >
                   {loading === plan.id ? '…' : isHigher ? `Passer en ${plan.name}` : `Choisir ${plan.name}`}
                 </button>
@@ -236,8 +235,8 @@ export default function SubscriptionPage() {
       {currentPlan !== 'trial' && (
         <div className="card p-6 flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-gray-900">Gérer votre abonnement</h3>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Gérer votre abonnement</h3>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
               Factures, méthode de paiement, annulation — via le portail Stripe sécurisé.
             </p>
           </div>
@@ -254,8 +253,8 @@ export default function SubscriptionPage() {
 
       {/* Exports */}
       <div className="card p-6">
-        <h3 className="font-semibold text-gray-900 mb-1">Exports de données</h3>
-        <p className="text-sm text-gray-500 mb-4">Téléchargez vos données au format CSV (compatible Excel).</p>
+        <h3 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Exports de données</h3>
+        <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Téléchargez vos données au format CSV (compatible Excel).</p>
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => downloadCSV(api.exports.dossiersUrl())}
@@ -274,9 +273,9 @@ export default function SubscriptionPage() {
 
       {/* Trial banner */}
       {currentPlan === 'trial' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-          <p className="text-sm font-medium text-amber-900 mb-1">Essai gratuit en cours</p>
-          <p className="text-sm text-amber-700">
+        <div className="rounded-xl p-5" style={{ background: 'rgba(255,181,71,0.08)', border: '1px solid rgba(255,181,71,0.25)' }}>
+          <p className="text-sm font-semibold mb-1" style={{ color: '#FFD280' }}>Essai gratuit en cours</p>
+          <p className="text-sm" style={{ color: 'rgba(255,181,71,0.8)' }}>
             Vous pouvez créer jusqu'à 3 dossiers en essai. Passez à un plan payant pour débloquer toutes les fonctionnalités.
           </p>
         </div>

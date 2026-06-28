@@ -57,12 +57,14 @@ function NewDossierModal({ onClose, sites }: { onClose: () => void; sites: any[]
   })
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Nouveau dossier</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100">
-            <X size={18} className="text-gray-500" />
+    <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+      <div className="card w-full max-w-lg max-h-[90vh] overflow-y-auto" style={{ background: 'var(--bg-surface)' }}>
+        <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Nouveau dossier</h2>
+          <button onClick={onClose} className="p-2 rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+            <X size={18} />
           </button>
         </div>
 
@@ -83,7 +85,7 @@ function NewDossierModal({ onClose, sites }: { onClose: () => void; sites: any[]
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="label mb-0">Plaque d'immatriculation</label>
-              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
                 <input type="checkbox" {...register('no_plate')} className="rounded" />
                 Illisible / absente
               </label>
@@ -106,12 +108,19 @@ function NewDossierModal({ onClose, sites }: { onClose: () => void; sites: any[]
                 { value: 'unknown', label: 'Inconnu', icon: '❓' },
               ] as const).map((opt) => (
                 <label key={opt.value} className={`
-                  flex flex-col items-center p-3 border rounded-lg cursor-pointer text-center transition-colors
-                  ${watch('vehicle_type') === opt.value ? 'border-primary-600 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}
-                `}>
+                  flex flex-col items-center p-3 rounded-xl cursor-pointer text-center transition-all
+                `}
+                style={{
+                  border: watch('vehicle_type') === opt.value
+                    ? '1px solid rgba(45,126,248,0.40)'
+                    : '1px solid rgba(255,255,255,0.08)',
+                  background: watch('vehicle_type') === opt.value
+                    ? 'rgba(45,126,248,0.10)'
+                    : 'rgba(255,255,255,0.03)',
+                }}>
                   <input type="radio" value={opt.value} {...register('vehicle_type')} className="sr-only" />
                   <span className="text-xl mb-1">{opt.icon}</span>
-                  <span className="text-xs font-medium text-gray-900">{opt.label}</span>
+                  <span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{opt.label}</span>
                 </label>
               ))}
             </div>
@@ -273,13 +282,14 @@ export default function DossiersPage() {
       <div className="card p-3 flex flex-wrap gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-48">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
           <input
             type="text"
             placeholder="Plaque, parking, place…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="input pl-9"
+            style={{ paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
 
@@ -287,7 +297,8 @@ export default function DossiersPage() {
         <select
           value={statusFilter}
           onChange={(e) => setFilter('status', e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+          className="input text-sm"
+          style={{ width: 'auto', paddingTop: '8px', paddingBottom: '8px' }}
         >
           <option value="">Tous les statuts</option>
           {ALL_STATUSES.map((s) => (
@@ -299,7 +310,8 @@ export default function DossiersPage() {
         <select
           value={siteFilter}
           onChange={(e) => setFilter('site_id', e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+          className="input text-sm"
+          style={{ width: 'auto', paddingTop: '8px', paddingBottom: '8px' }}
         >
           <option value="">Tous les parkings</option>
           {sites.map((s) => (
@@ -310,7 +322,8 @@ export default function DossiersPage() {
         {(statusFilter || siteFilter || search) && (
           <button
             onClick={() => { setSearchParams({}); setSearch('') }}
-            className="text-sm text-gray-500 hover:text-gray-900 px-2"
+            className="text-sm px-2 transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
           >
             Effacer
           </button>
@@ -321,9 +334,11 @@ export default function DossiersPage() {
       <div className="flex gap-2 overflow-x-auto pb-1">
         <button
           onClick={() => setFilter('status', '')}
-          className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-            !statusFilter ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
+          className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+          style={!statusFilter
+            ? { background: 'rgba(45,126,248,0.18)', color: '#6BA8FF', border: '1px solid rgba(45,126,248,0.30)' }
+            : { background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', border: '1px solid rgba(255,255,255,0.08)' }
+          }
         >
           Tous ({dossiers.length})
         </button>
@@ -333,9 +348,11 @@ export default function DossiersPage() {
             <button
               key={s}
               onClick={() => setFilter('status', s)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                statusFilter === s ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
+              className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+              style={statusFilter === s
+                ? { background: 'rgba(45,126,248,0.18)', color: '#6BA8FF', border: '1px solid rgba(45,126,248,0.30)' }
+                : { background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', border: '1px solid rgba(255,255,255,0.08)' }
+              }
             >
               {STATUS_CONFIG[s].label} ({count})
             </button>
@@ -350,12 +367,13 @@ export default function DossiersPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="card p-12 text-center">
-          <FolderOpen size={40} className="text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Aucun dossier trouvé.</p>
+          <FolderOpen size={40} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Aucun dossier trouvé.</p>
           {(statusFilter || siteFilter || search) && (
             <button
               onClick={() => { setSearchParams({}); setSearch('') }}
-              className="mt-3 text-sm text-primary-600 hover:underline"
+              className="mt-3 text-sm hover:underline"
+              style={{ color: 'var(--electric-blue)' }}
             >
               Effacer les filtres
             </button>
@@ -364,7 +382,8 @@ export default function DossiersPage() {
       ) : (
         <div className="card overflow-hidden">
           {/* Header */}
-          <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto_auto] gap-3 px-4 py-2.5 bg-gray-50 border-b border-gray-100 text-xs font-medium text-gray-500 uppercase tracking-wide">
+          <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto_auto] gap-3 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide"
+            style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-muted)' }}>
             <div className="w-8" />
             <div>Véhicule</div>
             <div>Parking · Place</div>
@@ -373,7 +392,7 @@ export default function DossiersPage() {
             <div />
           </div>
 
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
             {filtered.map((d) => (
               <DossierTableRow key={d.id} dossier={d} />
             ))}
@@ -390,19 +409,21 @@ function DossierTableRow({ dossier }: { dossier: Dossier }) {
   return (
     <Link
       to={`/dossiers/${dossier.id}`}
-      className={`grid grid-cols-[auto_1fr_1fr_1fr_auto_auto] gap-3 items-center px-4 py-3.5 hover:bg-gray-50 transition-colors ${
-        isUrgent ? 'bg-red-50/40' : ''
-      }`}
+      className="grid grid-cols-[auto_1fr_1fr_1fr_auto_auto] gap-3 items-center px-4 py-3.5 transition-all"
+      style={{ background: isUrgent ? 'rgba(255,71,87,0.05)' : 'transparent' }}
+      onMouseEnter={e => (e.currentTarget.style.background = isUrgent ? 'rgba(255,71,87,0.08)' : 'rgba(45,126,248,0.05)')}
+      onMouseLeave={e => (e.currentTarget.style.background = isUrgent ? 'rgba(255,71,87,0.05)' : 'transparent')}
     >
-      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-base">
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
+        style={{ background: 'rgba(255,255,255,0.06)' }}>
         {dossier.vehicle_type === 'epave' ? '🔧' : '🚗'}
       </div>
 
       <div className="min-w-0">
-        <div className="font-semibold text-sm text-gray-900">
-          {dossier.plate ?? <span className="text-gray-400 font-normal italic">Sans plaque</span>}
+        <div className="font-semibold text-sm kpi-number" style={{ color: 'var(--text-primary)' }}>
+          {dossier.plate ?? <span className="font-normal italic" style={{ color: 'var(--text-muted)' }}>Sans plaque</span>}
         </div>
-        <div className="text-xs text-gray-400">
+        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
           {dossier.vehicle_type === 'va' ? 'VA' : dossier.vehicle_type === 'epave' ? 'Épave' : '?'}
           {dossier.vehicle_brand ? ` · ${dossier.vehicle_brand}` : ''}
           {dossier.vehicle_color ? ` · ${dossier.vehicle_color}` : ''}
@@ -410,16 +431,15 @@ function DossierTableRow({ dossier }: { dossier: Dossier }) {
       </div>
 
       <div className="min-w-0">
-        <div className="text-sm text-gray-700 truncate">{dossier.sites?.name ?? '—'}</div>
-        <div className="text-xs text-gray-400">{dossier.location_spot ?? 'Place non renseignée'}</div>
+        <div className="text-sm truncate" style={{ color: 'var(--text-primary)' }}>{dossier.sites?.name ?? '—'}</div>
+        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{dossier.location_spot ?? 'Place non renseignée'}</div>
       </div>
 
       <div>
         <StatusBadge status={dossier.status} />
         {dossier.deadline_at && ['deadline_running', 'deadline_expired'].includes(dossier.status) && (
-          <div className={`text-xs mt-1 ${
-            dossier.status === 'deadline_expired' ? 'text-red-600 font-medium' : 'text-orange-600'
-          }`}>
+          <div className="text-xs mt-1 font-medium"
+            style={{ color: dossier.status === 'deadline_expired' ? 'var(--danger)' : 'var(--warning)' }}>
             {dossier.status === 'deadline_expired' ? '⚠ Expiré' : ''}
             {dossier.status === 'deadline_running'
               ? `Expire ${formatDistanceToNow(new Date(dossier.deadline_at), { addSuffix: true, locale: fr })}`
@@ -428,12 +448,12 @@ function DossierTableRow({ dossier }: { dossier: Dossier }) {
         )}
       </div>
 
-      <div className="text-xs text-gray-400 text-right whitespace-nowrap">
-        <div>{format(new Date(dossier.created_at), 'd MMM', { locale: fr })}</div>
-        <div className="text-gray-300">{formatDistanceToNow(new Date(dossier.created_at), { addSuffix: true, locale: fr })}</div>
+      <div className="text-xs text-right whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+        <div style={{ color: 'var(--text-secondary)' }}>{format(new Date(dossier.created_at), 'd MMM', { locale: fr })}</div>
+        <div>{formatDistanceToNow(new Date(dossier.created_at), { addSuffix: true, locale: fr })}</div>
       </div>
 
-      <ArrowRight size={14} className="text-gray-300" />
+      <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} />
     </Link>
   )
 }

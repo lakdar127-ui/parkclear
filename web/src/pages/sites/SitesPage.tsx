@@ -24,10 +24,10 @@ const TYPE_LABELS: Record<string, string> = {
   mixed: 'Mixte',
 }
 
-const TYPE_COLORS: Record<string, string> = {
-  open: 'bg-green-100 text-green-700',
-  closed: 'bg-amber-100 text-amber-700',
-  mixed: 'bg-blue-100 text-blue-700',
+const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
+  open:   { bg: 'rgba(0,200,150,0.12)',  color: '#00C896' },
+  closed: { bg: 'rgba(255,181,71,0.12)', color: '#FFB547' },
+  mixed:  { bg: 'rgba(45,126,248,0.12)', color: '#6BA8FF' },
 }
 
 export default function SitesPage() {
@@ -79,8 +79,8 @@ export default function SitesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Parkings</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Parkings</h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
             {isLoading ? '…' : `${sites.length} parking${sites.length > 1 ? 's' : ''} configuré${sites.length > 1 ? 's' : ''}`}
           </p>
         </div>
@@ -93,7 +93,7 @@ export default function SitesPage() {
       {/* Grid */}
       {isLoading ? (
         <div className="card p-12 flex justify-center">
-          <div className="animate-spin h-7 w-7 border-2 border-primary-600 border-t-transparent rounded-full" />
+          <div className="animate-spin h-7 w-7 border-2 border-t-transparent rounded-full" style={{ borderColor: 'var(--electric-blue)', borderTopColor: 'transparent' }} />
         </div>
       ) : sites.length === 0 ? (
         <EmptyState onAdd={() => setShowModal(true)} />
@@ -111,12 +111,15 @@ export default function SitesPage() {
 
       {/* Create modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900">Nouveau parking</h2>
-              <button onClick={() => { setShowModal(false); reset() }} className="p-2 rounded-lg hover:bg-gray-100">
-                <X size={18} className="text-gray-500" />
+        <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+          <div className="card w-full max-w-lg max-h-[90vh] overflow-y-auto" style={{ background: 'var(--bg-surface)' }}>
+            <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Nouveau parking</h2>
+              <button onClick={() => { setShowModal(false); reset() }} className="p-2 rounded-lg transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                <X size={18} />
               </button>
             </div>
 
@@ -149,13 +152,14 @@ export default function SitesPage() {
                 <label className="label">Type d'accès *</label>
                 <div className="grid grid-cols-3 gap-3 mt-1">
                   {(['open', 'closed', 'mixed'] as const).map((t) => (
-                    <label key={t} className={`
-                      flex flex-col items-center p-3 border rounded-lg cursor-pointer text-center transition-colors
-                      ${watch('type') === t ? 'border-primary-600 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}
-                    `}>
+                    <label key={t} className="flex flex-col items-center p-3 rounded-xl cursor-pointer text-center transition-all"
+                      style={{
+                        border: watch('type') === t ? '1px solid rgba(45,126,248,0.40)' : '1px solid rgba(255,255,255,0.08)',
+                        background: watch('type') === t ? 'rgba(45,126,248,0.10)' : 'rgba(255,255,255,0.03)',
+                      }}>
                       <input type="radio" value={t} {...register('type')} className="sr-only" />
                       <span className="text-lg mb-1">{t === 'open' ? '🌐' : t === 'closed' ? '🔒' : '🔄'}</span>
-                      <span className="text-xs font-medium text-gray-900">{TYPE_LABELS[t]}</span>
+                      <span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{TYPE_LABELS[t]}</span>
                     </label>
                   ))}
                 </div>
@@ -199,10 +203,10 @@ export default function SitesPage() {
 
       {/* Delete confirm */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Supprimer ce parking ?</h3>
-            <p className="text-sm text-gray-500 mb-6">
+        <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+          <div className="card p-6 max-w-sm w-full" style={{ background: 'var(--bg-surface)' }}>
+            <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Supprimer ce parking ?</h3>
+            <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
               Cette action est irréversible. Les dossiers associés seront également supprimés.
             </p>
             <div className="flex gap-3">
@@ -223,30 +227,36 @@ export default function SitesPage() {
 }
 
 function SiteCard({ site, onDelete }: { site: Site; onDelete: () => void }) {
+  const tc = TYPE_COLORS[site.type] ?? TYPE_COLORS.open
   return (
-    <div className="card p-5 hover:shadow-md transition-shadow">
+    <div className="card-hover p-5">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center">
-            <Building2 size={20} className="text-primary-600" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: 'rgba(45,126,248,0.12)' }}>
+            <Building2 size={20} style={{ color: '#2D7EF8' }} />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 text-sm leading-tight">{site.name}</h3>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium mt-1 inline-block ${TYPE_COLORS[site.type]}`}>
+            <h3 className="font-semibold text-sm leading-tight" style={{ color: 'var(--text-primary)' }}>{site.name}</h3>
+            <span className="text-xs px-2 py-0.5 rounded-full font-semibold mt-1 inline-block"
+              style={{ background: tc.bg, color: tc.color }}>
               {TYPE_LABELS[site.type]}
             </span>
           </div>
         </div>
         <button
           onClick={onDelete}
-          className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+          className="p-1.5 rounded-lg transition-all"
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,71,87,0.12)'; e.currentTarget.style.color = 'var(--danger)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
           title="Supprimer"
         >
           <Trash2 size={14} />
         </button>
       </div>
 
-      <div className="space-y-1.5 text-sm text-gray-500">
+      <div className="space-y-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
         <div className="flex items-center gap-2">
           <MapPin size={12} className="shrink-0" />
           <span className="truncate">{site.address}, {site.city} {site.postal_code}</span>
@@ -258,7 +268,7 @@ function SiteCard({ site, onDelete }: { site: Site; onDelete: () => void }) {
           </div>
         )}
         {site.notes && (
-          <p className="text-xs text-gray-400 mt-2 line-clamp-2">{site.notes}</p>
+          <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{site.notes}</p>
         )}
       </div>
     </div>
@@ -268,11 +278,12 @@ function SiteCard({ site, onDelete }: { site: Site; onDelete: () => void }) {
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="card p-12 text-center">
-      <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <MapPin size={32} className="text-gray-400" />
+      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+        style={{ background: 'rgba(255,255,255,0.06)' }}>
+        <MapPin size={32} style={{ color: 'var(--text-muted)' }} />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun parking configuré</h3>
-      <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
+      <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Aucun parking configuré</h3>
+      <p className="text-sm max-w-sm mx-auto mb-6" style={{ color: 'var(--text-secondary)' }}>
         Ajoutez vos parkings pour pouvoir créer des dossiers de véhicules abandonnés.
       </p>
       <button onClick={onAdd} className="btn-primary">
