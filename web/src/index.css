@@ -4,19 +4,27 @@
 
 /* ── CSS Variables ───────────────────────────────────────── */
 :root {
-  --bg-base:       #0A0E1A;
-  --bg-surface:    #0D1117;
-  --bg-elevated:   #111827;
-  --border:        rgba(255,255,255,0.08);
-  --border-strong: rgba(255,255,255,0.14);
-  --text-primary:  #F0F4FF;
-  --text-secondary:#8892A4;
-  --text-muted:    #4A5568;
-  --electric-blue: #2D7EF8;
-  --electric-violet:#7B61FF;
-  --success:       #00C896;
-  --danger:        #FF4757;
-  --warning:       #FFB547;
+  --bg-base:        #080C14;
+  --bg-surface:     #0F1624;
+  --bg-elevated:    #131E30;
+  --bg-card:        rgba(255,255,255,0.04);
+  --bg-card-hover:  rgba(255,255,255,0.07);
+  --border:         rgba(255,255,255,0.08);
+  --border-strong:  rgba(255,255,255,0.14);
+  --border-active:  rgba(124,92,252,0.5);
+  --text-primary:   #F0F4FF;
+  --text-secondary: #8892A4;
+  --text-muted:     #4A5568;
+  /* Brand — violet électrique + cyan */
+  --brand-primary:  #7C5CFC;
+  --brand-secondary:#00D2FF;
+  --brand-gradient: linear-gradient(135deg, #7C5CFC 0%, #00D2FF 100%);
+  /* Alias compat */
+  --electric-blue:  #7C5CFC;
+  --electric-violet:#7C5CFC;
+  --success:        #00E5A0;
+  --danger:         #FF4D6A;
+  --warning:        #FFB547;
 }
 
 /* ── Base ────────────────────────────────────────────────── */
@@ -69,9 +77,9 @@
   }
   .btn-primary {
     @apply btn text-white;
-    background: linear-gradient(135deg, #2D7EF8 0%, #7B61FF 100%);
-    box-shadow: 0 0 20px rgba(45,126,248,0.30), 0 4px 12px rgba(0,0,0,0.3);
-    &:hover { box-shadow: 0 0 30px rgba(45,126,248,0.45), 0 4px 16px rgba(0,0,0,0.4); transform: translateY(-1px); }
+    background: var(--brand-gradient);
+    box-shadow: 0 0 20px rgba(124,92,252,0.30), 0 4px 12px rgba(0,0,0,0.3);
+    &:hover { box-shadow: 0 0 30px rgba(124,92,252,0.45), 0 4px 16px rgba(0,0,0,0.4); transform: translateY(-1px); }
     &:active { transform: translateY(0); }
   }
   .btn-secondary {
@@ -104,13 +112,25 @@
   }
   .card-hover {
     @apply card cursor-pointer;
-    transition: all 0.2s ease;
-    &:hover {
-      background: rgba(255,255,255,0.07);
-      border-color: rgba(45,126,248,0.30);
-      box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 20px rgba(45,126,248,0.08);
-      transform: translateY(-1px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: var(--brand-gradient);
+      opacity: 0;
+      transition: opacity 0.2s;
     }
+    &:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(124,92,252,0.30);
+      box-shadow: 0 8px 32px rgba(124,92,252,0.15);
+      transform: translateY(-2px);
+    }
+    &:hover::before { opacity: 1; }
   }
   .stat-card { @apply card p-5; }
 
@@ -180,9 +200,61 @@
 
 /* ── Animated bg glow (hero) ─────────────────────────────── */
 .bg-radial-glow {
-  background: radial-gradient(ellipse at 50% -30%, rgba(45,126,248,0.18) 0%, transparent 65%);
+  background: radial-gradient(ellipse at 50% -30%, rgba(124,92,252,0.18) 0%, transparent 65%);
   pointer-events: none;
 }
+
+/* ── Pulse animation (alert dot) ────────────────────────── */
+@keyframes pulse-dot {
+  0%   { box-shadow: 0 0 0 0 rgba(255,77,106,0.5); }
+  70%  { box-shadow: 0 0 0 8px rgba(255,77,106,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,77,106,0); }
+}
+.pulse-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: pulse-dot 2s ease infinite;
+  flex-shrink: 0;
+}
+
+/* ── Pill status ─────────────────────────────────────────── */
+.pill { padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.pill--warning { background: rgba(255,181,71,0.15); color: #FFB547; }
+.pill--success { background: rgba(0,229,160,0.15); color: #00E5A0; }
+.pill--danger  { background: rgba(255,77,106,0.15); color: #FF4D6A; }
+.pill--neutral { background: rgba(136,146,164,0.15); color: #8892A4; }
+.pill--blue    { background: rgba(124,92,252,0.15); color: #A594FF; }
+
+/* ── KPI card glow top-border ────────────────────────────── */
+.kpi-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--brand-gradient);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.kpi-card:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(124,92,252,0.15);
+}
+.kpi-card:hover::before { opacity: 1; }
 
 /* ── Select fix in dark mode ─────────────────────────────── */
 select {

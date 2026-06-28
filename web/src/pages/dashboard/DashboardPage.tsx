@@ -6,6 +6,7 @@ import { fr } from 'date-fns/locale'
 import {
   FolderOpen, AlertTriangle, CheckCircle, Clock,
   Plus, ArrowRight, TrendingUp, Building2, ArrowUpRight,
+  Car, Wrench, ChevronRight, MapPin,
 } from 'lucide-react'
 import { api, Dossier } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
@@ -51,11 +52,11 @@ export default function DashboardPage() {
     {
       label: 'Dossiers actifs',
       value: isLoading ? '–' : active.length,
-      sub: `/${dossiers.length} total`,
+      sub: `sur ${dossiers.length} total`,
       icon: FolderOpen,
       href: '/dossiers',
-      color: '#2D7EF8',
-      glow: 'rgba(45,126,248,0.20)',
+      color: '#7C5CFC',
+      glow: 'rgba(124,92,252,0.20)',
     },
     {
       label: 'Action requise',
@@ -63,8 +64,8 @@ export default function DashboardPage() {
       sub: actionRequired.length > 0 ? 'à traiter' : 'tout est ok',
       icon: AlertTriangle,
       href: '/dossiers?status=open',
-      color: actionRequired.length > 0 ? '#FFB547' : '#4A5568',
-      glow: actionRequired.length > 0 ? 'rgba(255,181,71,0.15)' : 'transparent',
+      color: actionRequired.length > 0 ? '#FF4D6A' : '#4A5568',
+      glow: actionRequired.length > 0 ? 'rgba(255,77,106,0.15)' : 'transparent',
       urgent: actionRequired.length > 0,
     },
     {
@@ -73,17 +74,17 @@ export default function DashboardPage() {
       sub: 'dossiers clôturés',
       icon: CheckCircle,
       href: '/dossiers?status=resolved',
-      color: '#00C896',
-      glow: 'rgba(0,200,150,0.15)',
+      color: '#00E5A0',
+      glow: 'rgba(0,229,160,0.15)',
     },
     {
       label: 'Délai moyen',
       value: isLoading ? '–' : avgDays !== null ? `${avgDays}j` : 'N/A',
-      sub: 'par dossier',
+      sub: 'par dossier résolu',
       icon: Clock,
       href: '/dossiers',
-      color: '#7B61FF',
-      glow: 'rgba(123,97,255,0.15)',
+      color: '#00D2FF',
+      glow: 'rgba(0,210,255,0.15)',
     },
   ]
 
@@ -121,59 +122,38 @@ export default function DashboardPage() {
       {/* ── KPI Cards ───────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <Link key={s.label} to={s.href} className="group relative overflow-hidden rounded-2xl transition-all duration-300"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: s.urgent ? `1px solid ${s.color}40` : '1px solid rgba(255,255,255,0.08)',
-              boxShadow: `0 4px 24px rgba(0,0,0,0.40)`,
-              padding: '20px',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.07)'
-              e.currentTarget.style.borderColor = `${s.color}40`
-              e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.boxShadow = `0 8px 40px rgba(0,0,0,0.5), 0 0 30px ${s.glow}`
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
-              e.currentTarget.style.borderColor = s.urgent ? `${s.color}40` : 'rgba(255,255,255,0.08)'
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.40)'
-            }}
-          >
-            {/* Icon */}
+          <Link key={s.label} to={s.href} className="kpi-card group"
+            style={{ border: s.urgent ? `1px solid ${s.color}50` : undefined }}>
+            {/* Top-border glow is handled by .kpi-card::before via CSS */}
             <div className="flex items-start justify-between mb-4">
-              <div className="p-2 rounded-xl" style={{ background: `${s.color}18` }}>
-                <s.icon size={18} style={{ color: s.color }} />
+              <div className="p-2.5 rounded-xl" style={{ background: `${s.color}18` }}>
+                <s.icon size={16} style={{ color: s.color }} />
               </div>
-              <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity"
+              <ArrowUpRight size={13} className="opacity-0 group-hover:opacity-60 transition-opacity mt-1"
                 style={{ color: s.color }} />
             </div>
-            {/* Value */}
-            <p className="kpi-number text-3xl font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            <p className="kpi-number font-bold" style={{ color: 'var(--text-primary)', fontSize: '32px', letterSpacing: '-1.5px', lineHeight: 1, marginBottom: '6px' }}>
               {s.value}
             </p>
-            <p className="text-[11px] font-semibold mt-1" style={{ color: 'var(--text-secondary)' }}>{s.label}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{s.sub}</p>
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</p>
+            <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>{s.sub}</p>
           </Link>
         ))}
       </div>
 
       {/* ── Alert ───────────────────────────────────────────── */}
       {actionRequired.length > 0 && (
-        <div className="flex items-center gap-4 px-5 py-4 rounded-2xl"
-          style={{ background: 'rgba(255,181,71,0.08)', border: '1px solid rgba(255,181,71,0.25)' }}>
-          <div className="p-2 rounded-xl shrink-0" style={{ background: 'rgba(255,181,71,0.15)' }}>
-            <AlertTriangle size={16} style={{ color: '#FFB547' }} />
-          </div>
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
+          style={{ background: 'rgba(255,77,106,0.08)', border: '1px solid rgba(255,77,106,0.25)' }}>
+          <div className="pulse-dot" />
           <div style={{ flex: 1 }}>
-            <p className="text-sm font-semibold" style={{ color: '#FFD280' }}>
+            <p className="text-sm font-semibold" style={{ color: '#FF7A8A' }}>
               {actionRequired.length} dossier{actionRequired.length > 1 ? 's' : ''} nécessite{actionRequired.length > 1 ? 'nt' : ''} votre attention
             </p>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,181,71,0.7)' }}>En attente de validation ou délai expiré</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,77,106,0.6)' }}>En attente de validation · délai expiré</p>
           </div>
-          <Link to="/dossiers?status=open" className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-            style={{ color: '#FFB547', background: 'rgba(255,181,71,0.12)', border: '1px solid rgba(255,181,71,0.25)' }}>
+          <Link to="/dossiers?status=open" className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0 transition-all"
+            style={{ color: '#FF4D6A', background: 'rgba(255,77,106,0.12)', border: '1px solid rgba(255,77,106,0.25)' }}>
             Traiter <ArrowRight size={12} />
           </Link>
         </div>
@@ -304,32 +284,37 @@ export default function DashboardPage() {
 }
 
 function DossierRow({ dossier, isLast }: { dossier: Dossier; isLast: boolean }) {
+  const isEpave = dossier.vehicle_type === 'epave'
   return (
     <Link to={`/dossiers/${dossier.id}`}
-      className="flex items-center gap-3 px-4 py-3 transition-colors"
+      className="group flex items-center gap-3 px-4 py-3 transition-all"
       style={{ borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.04)' }}
-      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(45,126,248,0.06)')}
+      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(124,92,252,0.06)')}
       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
     >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm"
-        style={{ background: 'rgba(255,255,255,0.06)' }}>
-        {dossier.vehicle_type === 'epave' ? '🔧' : '🚗'}
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        style={{ background: isEpave ? 'rgba(255,181,71,0.12)' : 'rgba(124,92,252,0.12)' }}>
+        {isEpave
+          ? <Wrench size={15} style={{ color: '#FFB547' }} />
+          : <Car size={15} style={{ color: '#A594FF' }} />
+        }
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold kpi-number" style={{ color: 'var(--text-primary)' }}>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="kpi-number text-sm font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
             {dossier.plate ?? 'Sans plaque'}
           </span>
           <StatusBadge status={dossier.status} />
         </div>
-        <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          {dossier.sites?.name ?? '—'}
-          {dossier.location_spot ? ` · ${dossier.location_spot}` : ''}
-        </p>
+        <div className="flex items-center gap-1 mt-0.5" style={{ color: 'var(--text-muted)' }}>
+          {dossier.sites?.name && <><MapPin size={10} /><span className="text-[11px] truncate">{dossier.sites.name}{dossier.location_spot ? ` · ${dossier.location_spot}` : ''}</span></>}
+        </div>
       </div>
       <p className="text-[11px] shrink-0" style={{ color: 'var(--text-muted)' }}>
         {formatDistanceToNow(new Date(dossier.created_at), { addSuffix: true, locale: fr })}
       </p>
+      <ChevronRight size={13} className="shrink-0 opacity-0 group-hover:opacity-40 transition-opacity"
+        style={{ color: 'var(--text-primary)', transform: 'translateX(0)', transition: 'all 0.15s' }} />
     </Link>
   )
 }

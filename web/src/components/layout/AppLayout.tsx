@@ -47,7 +47,7 @@ export default function AppLayout() {
         <div className="relative h-14 flex items-center gap-3 px-5"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-black text-sm text-white"
-            style={{ background: 'linear-gradient(135deg, #2D7EF8, #7B61FF)', boxShadow: '0 0 16px rgba(45,126,248,0.4)' }}>
+            style={{ background: 'linear-gradient(135deg, #7C5CFC, #00D2FF)', boxShadow: '0 0 16px rgba(124,92,252,0.5)' }}>
             P
           </div>
           <span className="font-bold text-sm tracking-tight" style={{ color: 'var(--text-primary)' }}>ParkClear</span>
@@ -76,16 +76,16 @@ export default function AppLayout() {
                 ${isActive ? 'text-white' : ''}
               `}
               style={({ isActive }) => isActive
-                ? { background: 'linear-gradient(135deg, rgba(45,126,248,0.20), rgba(123,97,255,0.15))', border: '1px solid rgba(45,126,248,0.25)', color: 'white' }
+                ? { background: 'linear-gradient(135deg, rgba(124,92,252,0.20), rgba(0,210,255,0.10))', border: '1px solid rgba(124,92,252,0.35)', color: 'white' }
                 : { color: 'var(--text-muted)', border: '1px solid transparent' }
               }
             >
               {({ isActive }) => (<>
                 {isActive && (
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full"
-                    style={{ background: 'linear-gradient(180deg, #2D7EF8, #7B61FF)' }} />
+                    style={{ background: 'linear-gradient(180deg, #7C5CFC, #00D2FF)' }} />
                 )}
-                <Icon size={16} style={{ color: isActive ? '#2D7EF8' : 'var(--text-muted)' }} />
+                <Icon size={16} style={{ color: isActive ? '#A594FF' : 'var(--text-muted)' }} />
                 <span>{label}</span>
               </>)}
             </NavLink>
