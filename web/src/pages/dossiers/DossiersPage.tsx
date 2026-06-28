@@ -1,12 +1,164 @@
 import { useEffect, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { formatDistanceToNow, format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Search, ArrowRight, FolderOpen, Download } from 'lucide-react'
-import { api, Dossier, DossierStatus } from '@/lib/api'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Search, ArrowRight, FolderOpen, Download, Plus, X } from 'lucide-react'
+import { api, Dossier, DossierStatus, CreateDossierPayload } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import { StatusBadge, STATUS_CONFIG } from '@/components/dossiers/StatusBadge'
+
+// ── New dossier form ─────────────────────────────────────────
+const newDossierSchema = z.object({
+  site_id: z.string().uuid('Sélectionnez un parking'),
+  plate: z.string().max(20).optional(),
+  no_plate: z.boolean().optional().default(false),
+  vehicle_type: z.enum(['va', 'epave', 'unknown']).default('unknown'),
+  vehicle_brand: z.string().max(50).optional(),
+  vehicle_color: z.string().max(30).optional(),
+  location_spot: z.string().max(20).optional(),
+  notes: z.string().max(500).optional(),
+})
+type NewDossierForm = z.infer<typeof newDossierSchema>
+
+function NewDossierModal({ onClose, sites }: { onClose: () => void; sites: any[] }) {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const createMutation = useMutation({
+    mutationFn: (data: CreateDossierPayload) => api.dossiers.create(data),
+    onSuccess: (dossier) => {
+      queryClient.invalidateQueries({ queryKey: ['dossiers'] })
+      navigate(`/dossiers/${dossier.id}`)
+    },
+  })
+
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<NewDossierForm>({
+    resolver: zodResolver(newDossierSchema),
+    defaultValues: { vehicle_type: 'unknown', no_plate: false },
+  })
+
+  const noPlate = watch('no_plate')
+
+  const onSubmit = handleSubmit((values) => {
+    createMutation.mutate({
+      site_id: values.site_id,
+      plate: noPlate ? undefined : values.plate || undefined,
+      no_plate: values.no_plate,
+      vehicle_type: values.vehicle_type,
+      vehicle_brand: values.vehicle_brand || undefined,
+      vehicle_color: values.vehicle_color || undefined,
+      location_spot: values.location_spot || undefined,
+      notes: values.notes || undefined,
+    })
+  })
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900">Nouveau dossier</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100">
+            <X size={18} className="text-gray-500" />
+          </button>
+        </div>
+
+        <form onSubmit={onSubmit} className="p-6 space-y-4">
+          {/* Site */}
+          <div>
+            <label className="label">Parking *</label>
+            <select {...register('site_id')} className="input">
+              <option value="">Sélectionner un parking…</option>
+              {sites.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+            {errors.site_id && <p className="error-text">{errors.site_id.message}</p>}
+          </div>
+
+          {/* Plate */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="label mb-0">Plaque d'immatriculation</label>
+              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                <input type="checkbox" {...register('no_plate')} className="rounded" />
+                Illisible / absente
+              </label>
+            </div>
+            <input
+              {...register('plate')}
+              className="input"
+              placeholder="AB-123-CD"
+              disabled={noPlate}
+            />
+          </div>
+
+          {/* Vehicle type */}
+          <div>
+            <label className="label">Type de véhicule</label>
+            <div className="grid grid-cols-3 gap-3">
+              {([
+                { value: 'va', label: 'Véhicule Abandonné', icon: '🚗' },
+                { value: 'epave', label: 'Épave', icon: '🔧' },
+                { value: 'unknown', label: 'Inconnu', icon: '❓' },
+              ] as const).map((opt) => (
+                <label key={opt.value} className={`
+                  flex flex-col items-center p-3 border rounded-lg cursor-pointer text-center transition-colors
+                  ${watch('vehicle_type') === opt.value ? 'border-primary-600 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}
+                `}>
+                  <input type="radio" value={opt.value} {...register('vehicle_type')} className="sr-only" />
+                  <span className="text-xl mb-1">{opt.icon}</span>
+                  <span className="text-xs font-medium text-gray-900">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Details */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Marque</label>
+              <input {...register('vehicle_brand')} className="input" placeholder="Renault, Peugeot…" />
+            </div>
+            <div>
+              <label className="label">Couleur</label>
+              <input {...register('vehicle_color')} className="input" placeholder="Blanc, Noir…" />
+            </div>
+            <div>
+              <label className="label">Numéro de place</label>
+              <input {...register('location_spot')} className="input" placeholder="B-42" />
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="label">Notes</label>
+            <textarea
+              {...register('notes')}
+              className="input resize-none"
+              rows={2}
+              placeholder="Observations complémentaires…"
+            />
+          </div>
+
+          {createMutation.isError && (
+            <p className="error-text text-sm">{(createMutation.error as Error).message}</p>
+          )}
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">Annuler</button>
+            <button type="submit" disabled={createMutation.isPending} className="btn-primary flex-1">
+              {createMutation.isPending ? 'Création…' : 'Créer le dossier →'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
 
 async function downloadCSV(url: string) {
   const { data: { session } } = await supabase.auth.getSession()
@@ -28,6 +180,7 @@ const ALL_STATUSES: DossierStatus[] = [
 export default function DossiersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const queryClient = useQueryClient()
+  const [showNewModal, setShowNewModal] = useState(false)
 
   const statusFilter = (searchParams.get('status') as DossierStatus | null) ?? ''
   const siteFilter = searchParams.get('site_id') ?? ''
@@ -90,18 +243,31 @@ export default function DossiersPage() {
             {statusFilter ? ` · ${STATUS_CONFIG[statusFilter as DossierStatus]?.label}` : ''}
           </p>
         </div>
-        <button
-          onClick={() => downloadCSV(api.exports.dossiersUrl({
-            ...(statusFilter ? { status: statusFilter } : {}),
-            ...(siteFilter   ? { site_id: siteFilter }  : {}),
-          }))}
-          className="btn-secondary flex items-center gap-2 text-sm"
-          title="Exporter les dossiers filtrés en CSV"
-        >
-          <Download size={15} />
-          Export CSV
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => downloadCSV(api.exports.dossiersUrl({
+              ...(statusFilter ? { status: statusFilter } : {}),
+              ...(siteFilter   ? { site_id: siteFilter }  : {}),
+            }))}
+            className="btn-secondary flex items-center gap-2 text-sm"
+            title="Exporter les dossiers filtrés en CSV"
+          >
+            <Download size={15} />
+            Export CSV
+          </button>
+          <button
+            onClick={() => setShowNewModal(true)}
+            className="btn-primary flex items-center gap-2 text-sm"
+          >
+            <Plus size={15} />
+            Nouveau dossier
+          </button>
+        </div>
       </div>
+
+      {showNewModal && (
+        <NewDossierModal onClose={() => setShowNewModal(false)} sites={sites} />
+      )}
 
       {/* Filters */}
       <div className="card p-3 flex flex-wrap gap-3">

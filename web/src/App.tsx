@@ -9,6 +9,8 @@ import AppLayout from '@/components/layout/AppLayout'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
 import DossiersPage from '@/pages/dossiers/DossiersPage'
 import DossierDetailPage from '@/pages/dossiers/DossierDetailPage'
+import SitesPage from '@/pages/sites/SitesPage'
+import AgentsPage from '@/pages/agents/AgentsPage'
 import SubscriptionPage from '@/pages/settings/SubscriptionPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -88,6 +90,8 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/dossiers" element={<DossiersPage />} />
         <Route path="/dossiers/:id" element={<DossierDetailPage />} />
+        <Route path="/sites" element={<SitesPage />} />
+        <Route path="/agents" element={<AgentsPage />} />
         <Route path="/settings/subscription" element={<SubscriptionPage />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Route>

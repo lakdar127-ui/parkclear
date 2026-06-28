@@ -88,6 +88,11 @@ export const api = {
     get: (id: string) =>
       request<{ dossier: DossierDetail }>(`/api/dossiers/${id}`)
         .then((r) => r.dossier),
+    create: (data: CreateDossierPayload) =>
+      request<{ dossier: Dossier }>('/api/dossiers', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }).then((r) => r.dossier),
     update: (id: string, data: UpdateDossierPayload) =>
       request<{ dossier: Dossier }>(`/api/dossiers/${id}`, {
         method: 'PATCH',
@@ -95,6 +100,14 @@ export const api = {
       }).then((r) => r.dossier),
     cancel: (id: string) =>
       request<void>(`/api/dossiers/${id}`, { method: 'DELETE' }),
+  },
+
+  agents: {
+    invite: (email: string, siteId?: string) =>
+      request<{ ok: boolean }>('/api/auth/invite-agent', {
+        method: 'POST',
+        body: JSON.stringify({ email, site_id: siteId }),
+      }),
   },
 }
 
@@ -186,6 +199,17 @@ export interface DossierDetail extends Dossier {
   sites: { id: string; name: string; address: string; city: string } | null
   profiles: { full_name: string | null; phone: string | null } | null
   photos: DossierPhoto[]
+}
+
+export interface CreateDossierPayload {
+  site_id: string
+  plate?: string
+  no_plate?: boolean
+  vehicle_type?: 'va' | 'epave' | 'unknown'
+  vehicle_brand?: string
+  vehicle_color?: string
+  location_spot?: string
+  notes?: string
 }
 
 export interface UpdateDossierPayload {
