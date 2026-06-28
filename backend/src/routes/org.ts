@@ -57,7 +57,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
   // Rattacher le profil à l'org
   await supabaseAdmin
     .from('profiles')
-    .update({ organization_id: org.id, role: 'manager' })
+    .update({ organization_id: org.id, role: 'manager', onboarding_done: true })
     .eq('id', authReq.userId)
 
   // Email de bienvenue
