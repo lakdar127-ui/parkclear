@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -46,6 +46,11 @@ export default function LoginPage({ isSignup = false }: { isSignup?: boolean }) 
   const navigate = useNavigate()
   const [serverError, setServerError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
+
+  // Ping backend on mount to wake up Render from cold start
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/health`).catch(() => {})
+  }, [])
 
   const schema = isSignup ? signupSchema : loginSchema
   const {

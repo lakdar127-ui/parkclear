@@ -2,25 +2,28 @@ import { DossierStatus } from '@/lib/api'
 
 interface Config {
   label: string
-  color: string
+  dot: string
+  bg: string
+  text: string
 }
 
 export const STATUS_CONFIG: Record<DossierStatus, Config> = {
-  open:              { label: 'En attente',      color: 'bg-yellow-100 text-yellow-800' },
-  validated:         { label: 'Validé',           color: 'bg-blue-100 text-blue-800' },
-  lrar_sent:         { label: 'LRAR envoyée',     color: 'bg-violet-100 text-violet-800' },
-  deadline_running:  { label: 'Délai en cours',   color: 'bg-orange-100 text-orange-800' },
-  deadline_expired:  { label: 'Délai expiré',     color: 'bg-red-100 text-red-800' },
-  opj_contacted:     { label: 'OPJ saisi',        color: 'bg-cyan-100 text-cyan-800' },
-  removal_scheduled: { label: 'Enlèvement prévu', color: 'bg-teal-100 text-teal-800' },
-  resolved:          { label: 'Résolu',           color: 'bg-green-100 text-green-800' },
-  cancelled:         { label: 'Annulé',           color: 'bg-gray-100 text-gray-500' },
+  open:              { label: 'En attente',      dot: 'bg-amber-400',   bg: 'bg-amber-50',   text: 'text-amber-700' },
+  validated:         { label: 'Validé',           dot: 'bg-blue-400',    bg: 'bg-blue-50',    text: 'text-blue-700' },
+  lrar_sent:         { label: 'LRAR envoyée',     dot: 'bg-violet-400',  bg: 'bg-violet-50',  text: 'text-violet-700' },
+  deadline_running:  { label: 'Délai en cours',   dot: 'bg-orange-400',  bg: 'bg-orange-50',  text: 'text-orange-700' },
+  deadline_expired:  { label: 'Délai expiré',     dot: 'bg-red-500',     bg: 'bg-red-50',     text: 'text-red-700' },
+  opj_contacted:     { label: 'OPJ saisi',        dot: 'bg-cyan-400',    bg: 'bg-cyan-50',    text: 'text-cyan-700' },
+  removal_scheduled: { label: 'Enlèvement prévu', dot: 'bg-teal-400',    bg: 'bg-teal-50',    text: 'text-teal-700' },
+  resolved:          { label: 'Résolu',           dot: 'bg-emerald-400', bg: 'bg-emerald-50', text: 'text-emerald-700' },
+  cancelled:         { label: 'Annulé',           dot: 'bg-gray-300',    bg: 'bg-gray-50',    text: 'text-gray-500' },
 }
 
 export function StatusBadge({ status }: { status: DossierStatus }) {
-  const cfg = STATUS_CONFIG[status] ?? { label: status, color: 'bg-gray-100 text-gray-500' }
+  const cfg = STATUS_CONFIG[status] ?? { label: status, dot: 'bg-gray-300', bg: 'bg-gray-50', text: 'text-gray-500' }
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${cfg.color}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${cfg.bg} ${cfg.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} shrink-0`} />
       {cfg.label}
     </span>
   )

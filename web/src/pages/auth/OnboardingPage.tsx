@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -53,6 +53,11 @@ export default function OnboardingPage() {
   const [_orgId, setOrgId] = useState<string | null>(null)
   const [siteId, setSiteId] = useState<string | null>(null)
   const [error, setError] = useState('')
+
+  // Warmup backend on mount to avoid cold-start timeout when user submits
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/health`).catch(() => {})
+  }, [])
 
   // ── Mutations ────────────────────────────────────────────────
   const createOrg = useMutation({ mutationFn: api.org.create })

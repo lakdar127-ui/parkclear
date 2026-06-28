@@ -3,7 +3,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { FolderOpen, AlertTriangle, CheckCircle, Clock, Plus, ArrowRight } from 'lucide-react'
+import {
+  FolderOpen, AlertTriangle, CheckCircle, Clock,
+  Plus, ArrowRight, TrendingUp, Building2,
+} from 'lucide-react'
 import { api, Dossier } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { supabase } from '@/lib/supabase'
@@ -13,80 +16,81 @@ export default function DashboardPage() {
   const { profile } = useAuthStore()
   const queryClient = useQueryClient()
 
-  const { data: sites = [] } = useQuery({
-    queryKey: ['sites'],
-    queryFn: api.sites.list,
-  })
-
+  const { data: sites = [] } = useQuery({ queryKey: ['sites'], queryFn: api.sites.list })
   const { data: dossiers = [], isLoading } = useQuery({
     queryKey: ['dossiers'],
     queryFn: () => api.dossiers.list({ limit: 100 }),
   })
 
-  // Realtime: auto-refresh quand un nouveau dossier arrive
   useEffect(() => {
     const channel = supabase
       .channel('dossiers-dashboard')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'dossiers' },
-        () => queryClient.invalidateQueries({ queryKey: ['dossiers'] })
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'dossiers' },
+        () => queryClient.invalidateQueries({ queryKey: ['dossiers'] }))
       .subscribe()
-
     return () => { supabase.removeChannel(channel) }
   }, [queryClient])
 
-  // Stats calculées côté client
   const now = new Date()
   const thisMonth = dossiers.filter((d) => {
-    const created = new Date(d.created_at)
-    return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear()
+    const c = new Date(d.created_at)
+    return c.getMonth() === now.getMonth() && c.getFullYear() === now.getFullYear()
   })
-
   const active = dossiers.filter((d) => !['resolved', 'cancelled'].includes(d.status))
-  const actionRequired = dossiers.filter((d) =>
-    ['deadline_expired', 'open'].includes(d.status)
-  )
+  const actionRequired = dossiers.filter((d) => ['deadline_expired', 'open'].includes(d.status))
   const resolvedThisMonth = thisMonth.filter((d) => d.status === 'resolved')
 
   const avgDays = (() => {
     const resolved = dossiers.filter((d) => d.status === 'resolved')
-    if (resolved.length === 0) return null
-    const total = resolved.reduce((acc, d) => {
-      return acc + (new Date(d.updated_at).getTime() - new Date(d.created_at).getTime())
-    }, 0)
-    return Math.round(total / resolved.length / (1000 * 60 * 60 * 24))
+    if (!resolved.length) return null
+    const total = resolved.reduce((acc, d) =>
+      acc + (new Date(d.updated_at).getTime() - new Date(d.created_at).getTime()), 0)
+    return Math.round(total / resolved.length / 86400000)
   })()
+
+  const firstName = profile?.full_name?.split(' ')[0] ?? 'là'
 
   const stats = [
     {
       label: 'Dossiers actifs',
-      value: isLoading ? '–' : String(active.length),
+      value: isLoading ? '–' : active.length,
+      sub: `sur ${dossiers.length} total`,
       icon: FolderOpen,
-      color: 'text-blue-600 bg-blue-50',
       href: '/dossiers',
+      accent: 'from-blue-500 to-indigo-600',
+      bg: 'bg-blue-50',
+      iconColor: 'text-blue-600',
     },
     {
       label: 'Action requise',
-      value: isLoading ? '–' : String(actionRequired.length),
+      value: isLoading ? '–' : actionRequired.length,
+      sub: actionRequired.length > 0 ? 'à traiter maintenant' : 'rien en attente',
       icon: AlertTriangle,
-      color: actionRequired.length > 0 ? 'text-amber-600 bg-amber-50' : 'text-gray-400 bg-gray-50',
-      href: '/dossiers?status=deadline_expired',
+      href: '/dossiers?status=open',
+      accent: actionRequired.length > 0 ? 'from-amber-500 to-orange-500' : 'from-gray-400 to-gray-500',
+      bg: actionRequired.length > 0 ? 'bg-amber-50' : 'bg-gray-50',
+      iconColor: actionRequired.length > 0 ? 'text-amber-600' : 'text-gray-400',
+      urgent: actionRequired.length > 0,
     },
     {
       label: 'Résolus ce mois',
-      value: isLoading ? '–' : String(resolvedThisMonth.length),
+      value: isLoading ? '–' : resolvedThisMonth.length,
+      sub: 'dossiers clôturés',
       icon: CheckCircle,
-      color: 'text-green-600 bg-green-50',
       href: '/dossiers?status=resolved',
+      accent: 'from-emerald-500 to-teal-600',
+      bg: 'bg-emerald-50',
+      iconColor: 'text-emerald-600',
     },
     {
       label: 'Délai moyen',
       value: isLoading ? '–' : avgDays !== null ? `${avgDays}j` : 'N/A',
+      sub: 'de résolution',
       icon: Clock,
-      color: 'text-purple-600 bg-purple-50',
       href: '/dossiers',
+      accent: 'from-violet-500 to-purple-600',
+      bg: 'bg-violet-50',
+      iconColor: 'text-violet-600',
     },
   ]
 
@@ -95,149 +99,208 @@ export default function DashboardPage() {
     .slice(0, 8)
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-7 animate-slide-up">
+
+      {/* ── Header ───────────────────────────────────────────── */}
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Bonjour, {profile?.full_name?.split(' ')[0] ?? 'là'} 👋
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            Bonjour, {firstName} 👋
           </h1>
-          <p className="text-gray-500 mt-1 text-sm">
+          <p className="text-sm text-gray-400 mt-1">
             {sites.length > 0
               ? `${sites.length} parking${sites.length > 1 ? 's' : ''} · ${active.length} dossier${active.length > 1 ? 's' : ''} actif${active.length > 1 ? 's' : ''}`
               : 'Bienvenue sur ParkClear.'}
           </p>
         </div>
-        <Link to="/dossiers" className="btn-primary flex items-center gap-2 text-sm">
-          <Plus size={16} />
+        <Link to="/dossiers" className="btn-primary gap-1.5">
+          <Plus size={15} />
           Nouveau dossier
         </Link>
       </div>
 
-      {/* Stats */}
+      {/* ── Stats ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <Link key={stat.label} to={stat.href} className="card p-5 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-500">{stat.label}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
+        {stats.map((s) => (
+          <Link
+            key={s.label}
+            to={s.href}
+            className={`card p-5 hover:shadow-card-md transition-all duration-200 group ${s.urgent ? 'ring-2 ring-amber-200' : ''}`}
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className={`p-2 rounded-xl ${s.bg}`}>
+                <s.icon size={18} className={s.iconColor} />
               </div>
-              <div className={`p-2 rounded-lg ${stat.color}`}>
-                <stat.icon size={20} />
-              </div>
+              <ArrowRight size={14} className="text-gray-200 group-hover:text-gray-400 group-hover:translate-x-0.5 transition-all mt-1" />
             </div>
+            <p className="text-3xl font-bold text-gray-900 tabular-nums">{s.value}</p>
+            <p className="text-xs font-medium text-gray-500 mt-0.5">{s.label}</p>
+            <p className="text-[11px] text-gray-400 mt-1">{s.sub}</p>
           </Link>
         ))}
       </div>
 
-      {/* Urgent alert */}
+      {/* ── Alert banner ─────────────────────────────────────── */}
       {actionRequired.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
-          <AlertTriangle size={20} className="text-amber-600 shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-amber-800">
-              {actionRequired.length} dossier{actionRequired.length > 1 ? 's' : ''} nécessite{actionRequired.length > 1 ? 'nt' : ''} une action
+        <div className="flex items-center gap-4 px-5 py-4 rounded-2xl bg-amber-50 border border-amber-200">
+          <div className="p-2 bg-amber-100 rounded-xl shrink-0">
+            <AlertTriangle size={18} className="text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-900">
+              {actionRequired.length} dossier{actionRequired.length > 1 ? 's' : ''} nécessite{actionRequired.length > 1 ? 'nt' : ''} votre attention
             </p>
             <p className="text-xs text-amber-600 mt-0.5">Délai expiré ou en attente de validation</p>
           </div>
-          <Link to="/dossiers?status=deadline_expired" className="text-sm font-medium text-amber-700 hover:text-amber-900 flex items-center gap-1">
-            Voir <ArrowRight size={14} />
+          <Link to="/dossiers?status=open" className="btn text-amber-700 bg-amber-100 hover:bg-amber-200 text-xs px-3 py-1.5 shrink-0">
+            Voir tout <ArrowRight size={12} />
           </Link>
         </div>
       )}
 
-      {/* Dossiers récents */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-gray-900">Dossiers récents</h2>
-          <Link to="/dossiers" className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
-            Voir tout <ArrowRight size={14} />
-          </Link>
+      {/* ── Main grid ────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* Recent dossiers */}
+        <div className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-900">Dossiers récents</h2>
+            <Link to="/dossiers" className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+              Voir tout <ArrowRight size={12} />
+            </Link>
+          </div>
+
+          {isLoading ? (
+            <div className="card p-10 flex justify-center">
+              <div className="animate-spin h-5 w-5 border-2 border-primary-500 border-t-transparent rounded-full" />
+            </div>
+          ) : recentDossiers.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="card overflow-hidden">
+              {recentDossiers.map((d, i) => (
+                <DossierRow key={d.id} dossier={d} isLast={i === recentDossiers.length - 1} />
+              ))}
+            </div>
+          )}
         </div>
 
-        {isLoading ? (
-          <div className="card p-8 flex justify-center">
-            <div className="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full" />
-          </div>
-        ) : recentDossiers.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <div className="card divide-y divide-gray-50">
-            {recentDossiers.map((d) => (
-              <DossierRow key={d.id} dossier={d} />
-            ))}
-          </div>
-        )}
-      </div>
+        {/* Sidebar: sites + quick stats */}
+        <div className="space-y-4">
 
-      {/* Parkings */}
-      {sites.length > 0 && (
-        <div>
-          <h2 className="text-base font-semibold text-gray-900 mb-3">Vos parkings</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sites.map((site) => (
-              <Link key={site.id} to={`/dossiers?site_id=${site.id}`} className="card p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-medium text-gray-900 text-sm">{site.name}</h3>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    site.type === 'open' ? 'bg-green-100 text-green-700' :
-                    site.type === 'closed' ? 'bg-amber-100 text-amber-700' :
-                    'bg-blue-100 text-blue-700'
-                  }`}>
-                    {site.type === 'open' ? 'Ouvert' : site.type === 'closed' ? 'Fermé' : 'Mixte'}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-400">{site.address}, {site.city}</p>
+          {/* Parkings */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-gray-900">Parkings</h2>
+              <Link to="/sites" className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+                Gérer <ArrowRight size={12} />
               </Link>
-            ))}
+            </div>
+            {sites.length === 0 ? (
+              <Link to="/sites" className="card p-4 flex items-center gap-3 hover:shadow-card-md transition-all text-gray-500 hover:text-gray-700">
+                <Building2 size={16} className="text-gray-300" />
+                <span className="text-xs">Ajouter un parking</span>
+              </Link>
+            ) : (
+              <div className="space-y-2">
+                {sites.slice(0, 4).map((site) => {
+                  const siteDossiers = dossiers.filter((d) => d.site_id === site.id && !['resolved', 'cancelled'].includes(d.status))
+                  return (
+                    <Link
+                      key={site.id}
+                      to={`/dossiers?site_id=${site.id}`}
+                      className="card p-3.5 flex items-center gap-3 hover:shadow-card-md transition-all group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+                        <Building2 size={14} className="text-primary-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-gray-900 truncate">{site.name}</p>
+                        <p className="text-[11px] text-gray-400">{site.city}</p>
+                      </div>
+                      {siteDossiers.length > 0 && (
+                        <span className="text-[11px] font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
+                          {siteDossiers.length}
+                        </span>
+                      )}
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
           </div>
+
+          {/* Activity summary */}
+          {dossiers.length > 0 && (
+            <div className="card p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp size={14} className="text-primary-500" />
+                <h3 className="text-xs font-semibold text-gray-900">Répartition par statut</h3>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { label: 'En cours', count: dossiers.filter(d => ['open','validated','lrar_sent','deadline_running'].includes(d.status)).length, color: 'bg-blue-400' },
+                  { label: 'Urgent', count: dossiers.filter(d => ['deadline_expired','opj_contacted'].includes(d.status)).length, color: 'bg-amber-400' },
+                  { label: 'Résolu', count: dossiers.filter(d => d.status === 'resolved').length, color: 'bg-emerald-400' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${item.color} shrink-0`} />
+                    <span className="text-[11px] text-gray-500 flex-1">{item.label}</span>
+                    <span className="text-[11px] font-semibold text-gray-700">{item.count}</span>
+                    <div className="w-16 h-1 bg-gray-100 rounded-full overflow-hidden">
+                      <div className={`h-full ${item.color} rounded-full`}
+                        style={{ width: `${dossiers.length ? (item.count / dossiers.length) * 100 : 0}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
 
-function DossierRow({ dossier }: { dossier: Dossier }) {
+function DossierRow({ dossier, isLast }: { dossier: Dossier; isLast: boolean }) {
   return (
     <Link
       to={`/dossiers/${dossier.id}`}
-      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+      className={`flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${!isLast ? 'border-b border-gray-50' : ''}`}
     >
-      <span className="text-xl">{dossier.vehicle_type === 'epave' ? '🔧' : '🚗'}</span>
+      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 text-sm">
+        {dossier.vehicle_type === 'epave' ? '🔧' : '🚗'}
+      </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-gray-900">
+          <span className="text-sm font-semibold text-gray-900">
             {dossier.plate ?? 'Sans plaque'}
           </span>
           <StatusBadge status={dossier.status} />
         </div>
-        <p className="text-xs text-gray-400 truncate">
+        <p className="text-[11px] text-gray-400 truncate mt-0.5">
           {dossier.sites?.name ?? '—'}
           {dossier.location_spot ? ` · ${dossier.location_spot}` : ''}
         </p>
       </div>
-      <span className="text-xs text-gray-400 shrink-0">
-        {formatDistanceToNow(new Date(dossier.created_at), { addSuffix: true, locale: fr })}
-      </span>
-      <ArrowRight size={14} className="text-gray-300" />
+      <div className="text-right shrink-0">
+        <p className="text-[11px] text-gray-400">
+          {formatDistanceToNow(new Date(dossier.created_at), { addSuffix: true, locale: fr })}
+        </p>
+      </div>
     </Link>
   )
 }
 
 function EmptyState() {
   return (
-    <div className="card p-12 text-center">
-      <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <FolderOpen size={32} className="text-gray-400" />
+    <div className="card p-10 text-center">
+      <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+        <FolderOpen size={24} className="text-gray-300" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun dossier pour l'instant</h3>
-      <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
-        Invitez un agent terrain pour signaler le premier véhicule abandonné via l'app mobile.
-      </p>
-      <div className="flex gap-3 justify-center">
-        <Link to="/agents" className="btn-primary text-sm">Inviter un agent</Link>
-      </div>
+      <h3 className="text-sm font-semibold text-gray-900 mb-1">Aucun dossier</h3>
+      <p className="text-xs text-gray-400 mb-4">Invitez un agent ou créez votre premier dossier.</p>
+      <Link to="/agents" className="btn-primary text-xs px-4 py-2">Inviter un agent</Link>
     </div>
   )
 }
